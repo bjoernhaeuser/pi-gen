@@ -59,17 +59,17 @@ if [ "$CONTAINER_EXISTS" != "" ]; then
 		--volumes-from="${CONTAINER_NAME}" --name "${CONTAINER_NAME}_cont" \
 		-e IMG_NAME="${IMG_NAME}"\
 		pi-gen \
-		bash -e -o pipefail -c "dpkg-reconfigure qemu-user-static &&
+		bash -e -o pipefail -c "ls -la /dev && dpkg-reconfigure qemu-user-static &&
 	cd /pi-gen; ./build.sh;
 	rsync -av work/*/build.log deploy/" &
 	wait "$!"
 else
 	trap "echo 'got CTRL+C... please wait 5s'; $DOCKER stop -t 5 ${CONTAINER_NAME}" SIGINT SIGTERM
-	time $DOCKER run --name "${CONTAINER_NAME}" --privileged \
+	time $DOCKER run --device=/dev/loop0 --device=/dev/loop-control --name "${CONTAINER_NAME}" --privileged \
 		-e IMG_NAME="${IMG_NAME}"\
 		"${config_file[@]}" \
 		pi-gen \
-		bash -e -o pipefail -c "dpkg-reconfigure qemu-user-static &&
+		bash -e -o pipefail -c "ls -la /dev && dpkg-reconfigure qemu-user-static &&
 	cd /pi-gen; ./build.sh &&
 	rsync -av work/*/build.log deploy/" &
 	wait "$!"
